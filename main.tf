@@ -9,6 +9,5 @@ resource "aws_instance" "example" {
    tags = {
     Name = "MyEC2Instance"
     Environment = "Development"
-    Project = "TerraformDemo"
   }
 }
