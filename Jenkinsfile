@@ -27,10 +27,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply') {
-            when {
-                // Define when to apply changes (e.g., on approval)
-            }
+        stage('Terraform Apply') 
             steps {
                 script {
                     // Apply Terraform changes
