@@ -18,7 +18,7 @@ terraform {
     hostname = "youritsolutions123.scalr.io"
     organization = "env-v0o3ctmoufoqapn9h"
     workspaces {
-      name = "migration-test"
+      name = "migration"
     }
   }
 
