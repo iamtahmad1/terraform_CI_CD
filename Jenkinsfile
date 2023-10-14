@@ -49,7 +49,6 @@ pipeline {
             steps {
                 // Create a Terraform plan
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh 'ls -al'
                 sh 'terraform plan -out=tfplan -var-file vars/"$(terraform workspace show).tfvars"'
             }
             }
