@@ -19,7 +19,7 @@ pipeline {
                 // Initialize Terraform and select a workspace
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 sh 'terraform init'
-                sh "terraform workspace select ${TF_WORKSPACE} || terraform workspace new ${TF_WORKSPACE}"
+                sh "terraform workspace select ${TF_WORKSPACE}"
             }
             }
         }
