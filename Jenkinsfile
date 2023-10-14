@@ -2,11 +2,7 @@
 
 pipeline {
     agent any
-    
-    environment {
-        // Default workspace
-        terraform_workspace = null
-    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -47,7 +43,7 @@ pipeline {
                         message: 'Select a Terraform workspace:',
                         parameters: [choice(name: 'tf_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
                     )
-                    env.terraform_workspace = userInput.tf_workspace
+                    writeFile file: 'selected_workspace.txt', text: userInput.tf_workspace
                 }
             }
             }
@@ -55,9 +51,21 @@ pipeline {
         
         stage('Select Workspace') {
             steps {
-                // Initialize Terraform and select a workspace
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh "terraform workspace select '${env.terraform_workspace}'"
+                script {
+                    def selectedWorkspace = readFile 'selected_workspace.txt'
+
+                    if (selectedWorkspace == null || selectedWorkspace.trim() == '') {
+                        error('Terraform workspace not selected. Aborting the pipeline.')
+                    }
+                    // Continue with the 'terraform init' command using 'selectedWorkspace'
+                    sh "terraform workspace select ${selectedWorkspace}"
+                }
+                }
+
+                // Initialize Terraform and select a workspace
+                {
+                
             }
             }
         }
