@@ -53,7 +53,23 @@ pipeline {
             }
             }
         }
-        
+        stage('Approval') {
+            steps {
+                script {
+                    // Use the "input" step to request approval
+                    def userInput = input(
+                        id: 'approval',
+                        message: 'Do you approve applying these Terraform changes?',
+                        parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]
+                    )
+                    
+                    if (userInput == 'No') {
+                        currentBuild.result = 'FAILURE'
+                        error('Approval denied. Aborting the pipeline.')
+                    }
+                }
+            }
+        }
         stage('Apply') {
             when {
                 // You can choose when to apply the Terraform changes, e.g., manual approval
