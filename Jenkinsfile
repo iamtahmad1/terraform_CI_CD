@@ -53,7 +53,7 @@ pipeline {
             }
             }
         }
-        stage('Approval') {
+        stage('Apply Approval') {
             steps {
                 script {
                     // Use the "input" step to request approval
@@ -83,6 +83,23 @@ pipeline {
             }
         }
         
+        stage('Destroy Approval') {
+            steps {
+                script {
+                    // Use the "input" step to request approval
+                    def userInput = input(
+                        id: 'approval',
+                        message: 'Do you approve applying these Terraform changes?',
+                        parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]
+                    )
+                    
+                    if (userInput == 'No') {
+                        currentBuild.result = 'FAILURE'
+                        error('Approval denied. Aborting the pipeline.')
+                    }
+                }
+            }
+        }
         stage('Destroy') {
             when {
                 // You can add conditions for when to destroy the infrastructure
@@ -90,8 +107,10 @@ pipeline {
             }
             steps {
                 // Destroy the Terraform-managed infrastructure (be very careful with this)
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 sh 'terraform destroy -auto-approve'
             }
+        }
         }
     }
 }
