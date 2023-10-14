@@ -12,6 +12,15 @@ pipeline {
             }
         }
 
+        stage('Initialization') {
+            steps {
+                // Initialize Terraform and select a workspace
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
+                sh "terraform init"
+            }
+            }
+        }
+
 
         stage('Fetch Terraform Workspaces') {
             steps {
@@ -28,9 +37,14 @@ pipeline {
                         return workspace
                     }
                     // Add the custom parameter to the build
-                    sh 'terraform init'
-                    currentBuild.description = 'Select a Terraform workspace'
-                    properties([parameters([choice(name: 'terraform_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')])])
+                    
+
+                    def userInput = input(
+                        id: 'workspace-selection',
+                        message: 'Select a Terraform workspace:',
+                        parameters: [choice(name: 'terraform_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
+                    )
+                    terraform_workspace = userInput
                 }
             }
             }
@@ -108,7 +122,7 @@ pipeline {
             steps {
                 // Destroy the Terraform-managed infrastructure (be very careful with this)
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh 'terraform destroy -auto-approve'
+                sh 'terraform destroy -auto-approve -var-file vars/"$(terraform workspace show).tfvars'
             }
         }
         }

@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    environment {
+        // Default workspace
+        TF_WORKSPACE = 'production'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Select Terraform Workspace') {
+            steps {
+                script {
+                    // List of workspace options
+                    def workspaceOptions = ['production', 'staging', 'development']
+
+                    // Prompt the user to choose a workspace
+                    def userInput = input(
+                        id: 'workspace-selection',
+                        message: 'Select a Terraform workspace:',
+                        parameters: [choice(name: 'TF_WORKSPACE', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
+                    )
+
+                    // Set the selected workspace as an environment variable
+                    env.TF_WORKSPACE = userInput
+                }
+            }
+        }
+
+        stage('Initialize') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+
+        stage('Plan') {
+            steps {
+                sh 'terraform plan -out=tfplan -input=false -var-file=myvars.tfvars'
+            }
+        }
+
+        stage('Apply') {
+            steps {
+                sh 'terraform apply -auto-approve tfplan'
+            }
+        }
+
+        // Other stages here
+    }
+}
