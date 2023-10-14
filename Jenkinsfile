@@ -45,7 +45,7 @@ pipeline {
                     def userInput = input(
                         id: 'workspace-selection',
                         message: 'Select a Terraform workspace:',
-                        parameters: [choice(name: 'terraform_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
+                        parameters: [choice(name: 'tf_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
                     )
                     env.terraform_workspace = userInput
                 }
