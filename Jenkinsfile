@@ -25,7 +25,7 @@ pipeline {
 
                     // Create a list of workspace options
                     def workspaceOptions = workspaceList.collect { workspace ->
-                        return [workspace]
+                        return workspace
                     }
                     // Add the custom parameter to the build
                     sh 'terraform init'
