@@ -3,7 +3,10 @@
 pipeline {
     agent any
     
-    
+    environment {
+        // Default workspace
+        terraform_workspace = null
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -44,7 +47,7 @@ pipeline {
                         message: 'Select a Terraform workspace:',
                         parameters: [choice(name: 'terraform_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
                     )
-                    terraform_workspace = userInput
+                    env.terraform_workspace = userInput
                 }
             }
             }
@@ -54,7 +57,7 @@ pipeline {
             steps {
                 // Initialize Terraform and select a workspace
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh "terraform workspace select ${params.terraform_workspace}"
+                sh "terraform workspace select ${params.env.terraform_workspace}"
             }
             }
         }
