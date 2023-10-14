@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // Define environment variables for your Terraform configuration
-        TF_WORKSPACE = 'production'
+        workspace = 'production'
     }
     
     stages {
@@ -19,7 +19,7 @@ pipeline {
                 // Initialize Terraform and select a workspace
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 sh 'terraform init'
-                sh "terraform workspace select ${TF_WORKSPACE}"
+                sh "terraform workspace select ${workspace}"
             }
             }
         }
