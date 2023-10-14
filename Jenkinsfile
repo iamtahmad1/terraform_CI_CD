@@ -47,7 +47,7 @@ pipeline {
                         message: 'Select a Terraform workspace:',
                         parameters: [choice(name: 'tf_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
                     )
-                    env.terraform_workspace = userInput
+                    env.terraform_workspace = userInput.tf_workspace
                 }
             }
             }
