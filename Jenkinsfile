@@ -62,11 +62,6 @@ pipeline {
                     sh "terraform workspace select ${selectedWorkspace}"
                 }
                 }
-
-                // Initialize Terraform and select a workspace
-                {
-                
-            }
             }
         }
         
