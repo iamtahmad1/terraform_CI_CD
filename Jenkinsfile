@@ -57,7 +57,7 @@ pipeline {
             steps {
                 // Initialize Terraform and select a workspace
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh "terraform workspace select ${params.env.terraform_workspace}"
+                sh "terraform workspace select ${env.terraform_workspace}"
             }
             }
         }
