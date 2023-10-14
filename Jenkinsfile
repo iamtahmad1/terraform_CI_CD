@@ -43,7 +43,7 @@ pipeline {
                         message: 'Select a Terraform workspace:',
                         parameters: [choice(name: 'tf_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
                     )
-                    writeFile file: 'selected_workspace.txt', text: userInput.tf_workspace
+                    writeFile file: 'selected_workspace.txt', text: userInput
                 }
             }
             }
