@@ -8,13 +8,13 @@ pipeline {
         label 'master'
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the code from your GitHub repository
-                checkout scm
-            }
-        }
+    // stages {
+    //     stage('Checkout') {
+    //         steps {
+    //             // Checkout the code from your GitHub repository
+    //             checkout scm
+    //         }
+    //     }
 
         // stage('Initialization') {
         //     steps {
@@ -34,9 +34,19 @@ pipeline {
                             node('master') {
                                 
                                     items.each { item ->
-                                        stage("Plan ${env} - ${item}") {
+                                        stage('Checkout') {
+                                                steps {
+                                                    // Checkout the code from your GitHub repository
+                                                    checkout scm
+                                                }
+                                            }
+
+                                        stage ('terraform init'){
                                             sh "terraform workspace list"
                                             sh "terraform init"
+                                        }
+                                        stage("Plan ${env} - ${item}") {
+                                            
                                             sh "terraform workspace select ${item}"
                                             sh 'terraform plan -out=tfplan -var-file vars/"$(terraform workspace show).tfvars"'
                                         }
