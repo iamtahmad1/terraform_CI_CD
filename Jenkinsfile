@@ -41,10 +41,10 @@ pipeline {
                         // Create a node for each environment
                         stage(workspace){
                         node(workspace) {
-                            steps{
+                    
                             checkout scm
                             buildTerraform(workspace)
-                            }
+                    
                         }
                     }
                     }
