@@ -39,14 +39,14 @@ pipeline {
                     
                     for (workspace in workspaces) {
                         // Create a node for each environment
-                        {
+                        
                         node(workspace) {
                     
                             checkout scm
                             buildTerraform(workspace)
                     
                         }
-                    }
+                    
                     }
                 }
             }
