@@ -1,5 +1,5 @@
 def workspaceList = [
-    'DEVEOPMENT': ['dev', 'qa'],
+    'DEVELOPMENT': ['dev', 'qa'],
     'PRODUCTION': ['prod', 'production'],
 ]
 
@@ -13,7 +13,7 @@ pipeline {
         stage('Environment Branches') {
             steps {
                 script {
-                    def workspaces = def workspaceList.DEVEOPMENT
+                    def workspaces = workspaceList.DEVELOPMENT
                     
                     for (workspace in workspaces) {
                         // Create a node for each environment
