@@ -43,7 +43,7 @@ def buildTerraform(workspace) {
                 // Create an execution plan for the infrastructure changes
                 sh "terraform workspace list"
                 sh "terraform workspace select ${workspace}"
-                sh "terraform plan -var="vars/${workspace}.tfvars" -out=tfplan"
+                sh 'terraform plan -var="vars/${workspace}.tfvars" -out=tfplan'
             }
         }
     }
