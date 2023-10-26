@@ -8,7 +8,7 @@ pipeline {
         label 'master'
     }
 
-    // stages {
+    stages {
     //     stage('Checkout') {
     //         steps {
     //             // Checkout the code from your GitHub repository
@@ -64,3 +64,4 @@ pipeline {
         
     }
 
+}
