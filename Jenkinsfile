@@ -16,18 +16,18 @@ pipeline {
             }
         }
 
-        stage('Initialization') {
-            steps {
-                // Initialize Terraform and select a workspace
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh "terraform init"
-            }
-            }
-        }
+        // stage('Initialization') {
+        //     steps {
+        //         // Initialize Terraform and select a workspace
+        //         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
+        //         sh "terraform init"
+        //     }
+        //     }
+        // }
         
          stage('Terraform Plan') {
             steps {
-
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']])
                 script {
                     workspaceConfigs.each { env, items ->
                         parallel "$env": {
@@ -35,6 +35,7 @@ pipeline {
                                 
                                     items.each { item ->
                                         stage("Plan ${env} - ${item}") {
+                                            sh "terraform init"
                                             sh "terraform workspace select ${item}"
                                             sh 'terraform plan -out=tfplan -var-file vars/"$(terraform workspace show).tfvars"'
                                         }
