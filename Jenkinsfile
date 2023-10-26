@@ -1,4 +1,4 @@
-def workspaceConfigs = [
+def workspaceList = [
     'DEVEOPMENT': ['dev', 'qa'],
     'PRODUCTION': ['prod', 'production'],
 ]
@@ -9,59 +9,45 @@ pipeline {
     }
 
     stages {
-    //     stage('Checkout') {
-    //         steps {
-    //             // Checkout the code from your GitHub repository
-    //             checkout scm
-    //         }
-    //     }
-
-        // stage('Initialization') {
-        //     steps {
-        //         // Initialize Terraform and select a workspace
-        //         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-        //         sh "terraform init"
-        //     }
-        //     }
-        // }
-        
-         stage('Terraform Plan') {
+        // Define your environment branches here
+        stage('Environment Branches') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
-                    workspaceConfigs.each { env, items ->
-                        parallel "$env": {
-                            node('master') {
-                                
-                                    items.each { item ->
-                                        stage('Checkout') {
-                                                steps {
-                                                    // Checkout the code from your GitHub repository
-                                                    checkout scm
-                                                }
-                                            }
-
-                                        stage ('terraform init'){
-                                            sh "terraform workspace list"
-                                            sh "terraform init"
-                                        }
-                                        stage("Plan ${env} - ${item}") {
-                                            
-                                            sh "terraform workspace select ${item}"
-                                            sh 'terraform plan -out=tfplan -var-file vars/"$(terraform workspace show).tfvars"'
-                                        }
-                                    }
-                                }
-                            }
+                    def workspaces = def workspaceList.DEVEOPMENT
+                    
+                    for (workspace in workspaces) {
+                        // Create a node for each environment
+                        node(workspace) {
+                            checkout scm
+                            buildTerraform(workspace)
                         }
                     }
                 }
             }
-         }
-        
+        }
+    }
 
+def buildTerraform(workspace) {
+    stage('Terraform Init') {
+        steps {
+            script {
+                // Initialize Terraform for the specified environment
+                sh "terraform init"
+            }
+        }
+    }
 
-        
+    stage('Terraform Plan') {
+        steps {
+            script {
+                // Create an execution plan for the infrastructure changes
+                sh "terraform workspace list"
+                sh "terraform workspace select ${workspace}"
+                sh "terraform plan -var="vars/${workspace}.tfvars" -out=tfplan"
+            }
+        }
     }
 
 }
+}
+
