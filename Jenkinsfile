@@ -1,4 +1,7 @@
-
+def workspaceConfigs = [
+    'dev': ['dev', 'qa'],
+    'prod': ['prod', 'production'],
+]
 
 pipeline {
     agent any
@@ -19,118 +22,30 @@ pipeline {
             }
             }
         }
-
-
-        stage('Fetch Terraform Workspaces') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                script {
-                    // Run 'terraform workspace list' and capture the output
-                    def workspaces = sh(script: 'terraform workspace list', returnStdout: true).trim()
-
-                    // Split the output into an array
-                    def workspaceList = workspaces.split('\n')
-
-                    // Create a list of workspace options
-                    def workspaceOptions = workspaceList.collect { workspace ->
-                        return workspace
-                    }
-                    // Add the custom parameter to the build
-                    
-
-                    def userInput = input(
-                        id: 'workspace-selection',
-                        message: 'Select a Terraform workspace:',
-                        parameters: [choice(name: 'tf_workspace', choices: workspaceOptions.join('\n'), description: 'Choose a Terraform workspace')]
-                    )
-                    writeFile file: 'selected_workspace.txt', text: userInput
-                }
-            }
-            }
-        }
         
-        stage('Select Workspace') {
+         stage('Terraform Plan') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                script {
-                    def selectedWorkspace = readFile 'selected_workspace.txt'
 
-                    if (selectedWorkspace == null || selectedWorkspace.trim() == '') {
-                        error('Terraform workspace not selected. Aborting the pipeline.')
-                    }
-                    // Continue with the 'terraform init' command using 'selectedWorkspace'
-                    sh "terraform workspace select ${selectedWorkspace}"
-                }
-                }
-            }
-        }
-        
-        stage('Plan') {
-            steps {
-                // Create a Terraform plan
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh 'terraform plan -out=tfplan -var-file vars/"$(terraform workspace show).tfvars"'
-            }
-            }
-        }
-        stage('Apply Approval') {
-            steps {
                 script {
-                    // Use the "input" step to request approval
-                    def userInput = input(
-                        id: 'approval',
-                        message: 'Do you approve applying these Terraform changes?',
-                        parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]
-                    )
-                    
-                    if (userInput == 'No') {
-                        currentBuild.result = 'FAILURE'
-                        error('Approval denied. Aborting the pipeline.')
+                    workspaceConfigs.each { env, items ->
+                        parallel "$env": {
+                            node {
+                                
+                                    items.each { item ->
+                                        stage("Plan ${env} - ${item}") {
+                                            sh "terraform workspace select ${item}"
+                                            sh 'terraform plan -out=tfplan -var-file vars/"$(terraform workspace show).tfvars"'
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-        stage('Apply') {
-            when {
-                // You can choose when to apply the Terraform changes, e.g., manual approval
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
-            steps {
-                // Apply the Terraform changes
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh 'terraform apply -auto-approve tfplan'
-            }
-            }
-        }
         
-        stage('Destroy Approval') {
-            steps {
-                script {
-                    // Use the "input" step to request approval
-                    def userInput = input(
-                        id: 'approval',
-                        message: 'Do you approve applying these Terraform changes?',
-                        parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]
-                    )
-                    
-                    if (userInput == 'No') {
-                        currentBuild.result = 'FAILURE'
-                        error('Approval denied. Aborting the pipeline.')
-                    }
-                }
-            }
-        }
-        stage('Destroy') {
-            when {
-                // You can add conditions for when to destroy the infrastructure
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
-            steps {
-                // Destroy the Terraform-managed infrastructure (be very careful with this)
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh 'terraform destroy -auto-approve -var-file vars/"$(terraform workspace show).tfvars'
-            }
-        }
-        }
+
+
+        
     }
 }
