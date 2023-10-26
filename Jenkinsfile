@@ -45,7 +45,15 @@ pipeline {
                        
                         steps{
                             checkout scm
-                            buildTerraform(workspace)
+                             stage('Terraform Init') {
+        steps {
+            script {
+                // Initialize Terraform for the specified environment
+                sh "terraform init"
+            }
+        }
+    }
+
                     
                         }
                     
