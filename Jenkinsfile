@@ -29,7 +29,7 @@ pipeline {
                 script {
                     workspaceConfigs.each { env, items ->
                         parallel "$env": {
-                             {
+                            node('any') {
                                 
                                     items.each { item ->
                                         stage("Plan ${env} - ${item}") {
