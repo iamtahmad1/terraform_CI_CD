@@ -1,0 +1,61 @@
+pipeline {
+    agent none
+    
+    stages {
+        // Define your environment branches here
+        stage('Environment Branches') {
+            steps {
+                script {
+                    def envBranches = ['dev', 'staging', 'prod']
+                    
+                    for (branch in envBranches) {
+                        // Create a node for each environment
+                        node(branch) {
+                            checkout scm
+                            buildTerraform(branch)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+def buildTerraform(branch) {
+    stage('Terraform Init') {
+        steps {
+            script {
+                // Initialize Terraform for the specified environment
+                sh "terraform init -backend-config=\"env=${branch}\""
+            }
+        }
+    }
+
+    stage('Terraform Plan') {
+        steps {
+            script {
+                // Create an execution plan for the infrastructure changes
+                sh "terraform plan -var=\"environment=${branch}\" -out=tfplan"
+            }
+        }
+    }
+
+    stage('Terraform Apply') {
+        steps {
+            script {
+                // Apply the infrastructure changes
+                sh "terraform apply -auto-approve tfplan"
+            }
+        }
+    }
+
+    stage('Terraform Destroy') {
+        steps {
+            script {
+                // In case you need to destroy the infrastructure (optional)
+                input message: "Destroy environment ${branch}?", ok: "Destroy"
+                sh "terraform destroy -var=\"environment=${branch}\" -auto-approve"
+            }
+        }
+    }
+}

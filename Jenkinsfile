@@ -39,9 +39,11 @@ pipeline {
                     
                     for (workspace in workspaces) {
                         // Create a node for each environment
+                        stage(workspace) {
+                            agent { label "${workspace}" }
                         
-                        node(workspace) {
-                    
+                       
+                        steps{
                             checkout scm
                             buildTerraform(workspace)
                     
@@ -54,4 +56,5 @@ pipeline {
     }
 
 
+}
 }
