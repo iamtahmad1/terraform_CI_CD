@@ -4,7 +4,9 @@ def workspaceConfigs = [
 ]
 
 pipeline {
-    agent any
+    agent {
+        label 'master'
+    }
 
     stages {
         stage('Checkout') {
@@ -29,7 +31,7 @@ pipeline {
                 script {
                     workspaceConfigs.each { env, items ->
                         parallel "$env": {
-                            node('any') {
+                            node('master') {
                                 
                                     items.each { item ->
                                         stage("Plan ${env} - ${item}") {
