@@ -39,7 +39,7 @@ pipeline {
                     
                     for (workspace in workspaces) {
                         // Create a node for each environment
-                        stage(workspace){
+                        {
                         node(workspace) {
                     
                             checkout scm
