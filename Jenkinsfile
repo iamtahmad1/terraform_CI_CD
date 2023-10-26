@@ -35,6 +35,7 @@ pipeline {
                                 
                                     items.each { item ->
                                         stage("Plan ${env} - ${item}") {
+                                            sh "terraform workspace list"
                                             sh "terraform init"
                                             sh "terraform workspace select ${item}"
                                             sh 'terraform plan -out=tfplan -var-file vars/"$(terraform workspace show).tfvars"'
