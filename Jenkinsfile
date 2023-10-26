@@ -27,7 +27,7 @@ pipeline {
         
          stage('Terraform Plan') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']])
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
                     workspaceConfigs.each { env, items ->
                         parallel "$env": {
@@ -46,6 +46,7 @@ pipeline {
                     }
                 }
             }
+         }
         
 
 
