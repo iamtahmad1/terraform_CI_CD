@@ -1,6 +1,6 @@
 def workspaceConfigs = [
-    'dev': ['dev', 'qa'],
-    'prod': ['prod', 'production'],
+    'DEVEOPMENT': ['dev', 'qa'],
+    'PRODUCTION': ['prod', 'production'],
 ]
 
 pipeline {
@@ -29,7 +29,7 @@ pipeline {
                 script {
                     workspaceConfigs.each { env, items ->
                         parallel "$env": {
-                            node {
+                             {
                                 
                                     items.each { item ->
                                         stage("Plan ${env} - ${item}") {
