@@ -28,7 +28,7 @@ def takeApproval(String stageName) {
                         id: 'userInput',
                         message: 'Select an action:',
                         parameters: [
-                            choice(name: 'ACTION', choices: 'Proceed\nAbort\nAbort All', description: 'Choose an action')
+                            choice(name: 'ACTION', choices: 'Proceed\nAbort', description: 'Choose an action')
                         ]
                     )
 
