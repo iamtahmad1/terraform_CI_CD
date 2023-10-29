@@ -20,53 +20,72 @@ def terraformapply() {
     sh "terraform apply -auto-approve tfplan"
 }
 
-def approvalStep(String stageName) {
+def takeApproval(String stageName) {
     stage(stageName) {
         
             script {
-                def approvalResult = input(id: "${stageName}_approval", message: "Do you approve ${stageName}?", ok: "Approve")
-                if (approvalResult == 'no') {
-                    error("Approval for ${stageName} was declined. Aborting the pipeline.")
+                  def userInput = input(
+                        id: 'userInput',
+                        message: 'Select an action:',
+                        parameters: [
+                            choice(name: 'ACTION', choices: 'Proceed\nAbort\nAbort All', description: 'Choose an action')
+                        ]
+                    )
+
+                    if (userInput == 'Proceed') {
+                        echo 'Proceeding with the next steps.'
+                    } else if (userInput == 'Abort') {
+                        error('User chose to abort this step.')
+                    } else if (userInput == 'Abort All') {
+                        currentBuild.result = 'ABORTED'
+                        error('User chose to abort all steps.')
+                    }
                 }
             }
         
     }
-}
+
 
 
 pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Initialization') {
-            steps {
-                // Initialize Terraform and select a workspace
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                terraforminit()
-            }
-            }
-        }
+        
+        // stage('Initialization') {
+        //     steps {
+        //         // Initialize Terraform and select a workspace
+        //         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
+        //         terraforminit()
+        //     }
+        //     }
+        // }
 
         stage('Terraform Prod Deployment'){
+            agent { label 'prod'}
             when {
                 branch 'main' // Only build the 'main' branch
             }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
+                    stage('Checkout') {
+                                        checkout scm
+    
+                                }
+                        stage('Terraform Init') {
+                            terraforminit()
+                        }
+
                     for (workspace in workspaceList.PRODUCTION){
+                        
+
                         stage("Terraform plan for $workspace"){
                             
                                 terraformplan(workspace)
                         }
                         
-                        approvalStep(workspace)
+                        takeApproval(workspace)
 
                         stage("Terraform apply for $workspace"){
                             
@@ -79,25 +98,33 @@ pipeline {
         }
 
         stage('Terraform Dev Deployment'){
+            agent { label 'dev'}
             when {
                 branch 'dev' // Only build the 'main' branch
             }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
+                    stage('Checkout') {
+                                        checkout scm
+    
+                                }
+                        stage('Terraform Init') {
+                            terraforminit()
+                        }
                     for (workspace in workspaceList.DEVELOPMENT){
-                        parallel{
+                        
                         stage("Terraform plan for $workspace"){
                             
                                 terraformplan(workspace)
                         }
                         
-                        approvalStep(workspace)
+                        takeApproval(workspace)
 
                         stage("Terraform apply for $workspace"){
                             
                                 terraformapply()
-                        }
+                        
                     }
                 }
                 }
