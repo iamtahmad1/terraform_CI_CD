@@ -2,67 +2,60 @@ def workspaceList = [
     'DEVELOPMENT': ['dev', 'qa'],
     'PRODUCTION': ['prod', 'production'],
 ]
-def buildTerraform(workspace) {
-    stage('Terraform Init') {
-        steps {
-            script {
-                // Initialize Terraform for the specified environment
-                sh "terraform init"
-            }
-        }
-    }
 
-    stage('Terraform Plan') {
-        steps {
-            script {
-                // Create an execution plan for the infrastructure changes
-                sh "terraform workspace list"
-                sh "terraform workspace select ${workspace}"
-                sh 'terraform plan -var="vars/${workspace}.tfvars" -out=tfplan'
-            }
-        }
-    }
+def terraforminit() {
+    // Your common steps or tasks go here
+    sh "terraform init"
+}
 
+
+def terraformplan(workspace) {
+    // Your common steps or tasks go here
+    sh 'terraform select $workspace'
+    sh 'terraform plan -out=tfplan -var-file vars/"($workspace).tfvars"'
+}
+
+def terraformapply() {
+    // Your common steps or tasks go here
+    sh 'sh terraform apply -auto-approve tfplan'
 }
 
 pipeline {
-    agent {
-        label 'master'
-    }
+    agent any
 
     stages {
-        // Define your environment branches here
-        stage('Environment Branches') {
+        stage('Checkout') {
             steps {
-                script {
-                    def workspaces = workspaceList.DEVELOPMENT
-                    
-                    for (workspace in workspaces) {
-                        // Create a node for each environment
-                        stage(workspace) {
-                            agent { label "${workspace}" }
-                        
-                       
-                        steps{
-                            checkout scm
-                             stage('Terraform Init') {
-        steps {
-            script {
-                // Initialize Terraform for the specified environment
-                sh "terraform init"
+                checkout scm
             }
         }
-    }
 
-                    
+        stage('Initialization') {
+            steps {
+                // Initialize Terraform and select a workspace
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
+                sh "terraform init"
+            }
+            }
+        }
+
+        stage('Terraform Plan'){
+            when {
+                branch 'main' // Only build the 'main' branch
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
+                script {
+                    for (workspace in workspaceList.PRODUCTION){
+                        stage("Terraform plan for $workspace"){
+                            steps {
+                                terraformplan($workspace)
+                            }
                         }
-                    
                     }
                 }
             }
         }
+        }
     }
-
-
-}
 }
