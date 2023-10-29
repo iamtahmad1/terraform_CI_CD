@@ -21,7 +21,7 @@ def terraformapply() {
 }
 
 def takeApproval(String stageName) {
-    stage(stageName) {
+    stage("Approval for $stageName") {
         
             script {
                   def userInput = input(
@@ -36,6 +36,7 @@ def takeApproval(String stageName) {
                         echo 'Proceeding with the next steps.'
                     } else if (userInput == 'Abort') {
                         error('User chose to abort this step.')
+                        Continue
                     } else if (userInput == 'Abort All') {
                         currentBuild.result = 'ABORTED'
                         error('User chose to abort all steps.')
