@@ -20,6 +20,20 @@ def terraformapply() {
     sh 'sh terraform apply -auto-approve tfplan'
 }
 
+def approvalStep(String stageName) {
+    stage(stageName) {
+        
+            script {
+                def approvalResult = input(id: "${stageName}_approval", message: "Do you approve ${stageName}?", ok: "Approve")
+                if (approvalResult == 'no') {
+                    error("Approval for ${stageName} was declined. Aborting the pipeline.")
+                }
+            }
+        
+    }
+}
+
+
 pipeline {
     agent any
 
@@ -34,7 +48,7 @@ pipeline {
             steps {
                 // Initialize Terraform and select a workspace
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                sh "terraform init"
+                terraforminit()
             }
             }
         }
@@ -50,6 +64,12 @@ pipeline {
                         stage("Terraform plan for $workspace"){
                             
                                 terraformplan(workspace)
+                        }
+                        approvalStep(workspace)
+
+                        stage("Terraform apply for $workspace"){
+                            
+                                terraformapply()
                         }
                     }
                 }
