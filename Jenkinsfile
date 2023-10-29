@@ -83,7 +83,7 @@ pipeline {
                         if (approval == 'Proceed') {
                         echo 'Proceeding with the next steps.'
                         } else if (approval == 'Abort') {
-                        echo('User chose to abort this step.')
+                        error('User chose to abort this step.')
                         continue
                         } else if (approval == 'Abort All') {
                         currentBuild.result = 'ABORTED'
