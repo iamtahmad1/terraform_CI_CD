@@ -35,8 +35,8 @@ def takeApproval(String stageName) {
                     if (userInput == 'Proceed') {
                         echo 'Proceeding with the next steps.'
                     } else if (userInput == 'Abort') {
-                        error('User chose to abort this step.')
-                        Continue
+                        echo('User chose to abort this step.')
+                        continue
                     } else if (userInput == 'Abort All') {
                         currentBuild.result = 'ABORTED'
                         error('User chose to abort all steps.')
