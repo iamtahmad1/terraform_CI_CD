@@ -12,7 +12,7 @@ def terraforminit() {
 def terraformplan(workspace) {
     // Your common steps or tasks go here
     sh "terraform workspace select '$workspace'"
-    sh "terraform plan -out=tfplan -var-file vars/'($workspace).tfvars'"
+    sh "terraform plan -out=tfplan -var-file vars/'$workspace'.tfvars"
 }
 
 def terraformapply() {
