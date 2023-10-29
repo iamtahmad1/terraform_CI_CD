@@ -20,21 +20,27 @@ def terraformapply() {
     sh "terraform apply -auto-approve tfplan"
 }
 
-def approvalStep(String stageName) {
+def takeApproval(String stageName) {
     stage(stageName) {
         
             script {
-                 // Use the "input" step to request approval
-                    def userInput = input(
-                        id: 'approval',
-                        message: 'Do you approve applying these Terraform changes?',
-                        parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]
+                  def userInput = input(
+                        id: 'userInput',
+                        message: 'Select an action:',
+                        parameters: [
+                            choice(name: 'ACTION', choices: 'Proceed\nAbort\nAbort All', description: 'Choose an action')
+                        ]
                     )
-                    
-                    if (userInput == 'No') {
-                        currentBuild.result = 'FAILURE'
-                        error('Approval denied. Aborting the pipeline.')
+
+                    if (userInput == 'Proceed') {
+                        echo 'Proceeding with the next steps.'
+                    } else if (userInput == 'Abort') {
+                        error('User chose to abort this step.')
+                    } else if (userInput == 'Abort All') {
+                        currentBuild.result = 'ABORTED'
+                        error('User chose to abort all steps.')
                     }
+                }
             }
         
     }
@@ -79,7 +85,7 @@ pipeline {
                                 terraformplan(workspace)
                         }
                         
-                        approvalStep(workspace)
+                        takeApproval(workspace)
 
                         stage("Terraform apply for $workspace"){
                             
@@ -113,7 +119,7 @@ pipeline {
                                 terraformplan(workspace)
                         }
                         
-                        approvalStep(workspace)
+                        takeApproval(workspace)
 
                         stage("Terraform apply for $workspace"){
                             
