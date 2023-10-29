@@ -56,14 +56,16 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
-                    for (workspace in workspaceList.PRODUCTION){
-                        stage('Checkout') {
+                    stage('Checkout') {
                                         checkout scm
     
                                 }
                         stage('Terraform Init') {
                             terraforminit()
                         }
+
+                    for (workspace in workspaceList.PRODUCTION){
+                        
 
                         stage("Terraform plan for $workspace"){
                             
@@ -83,12 +85,20 @@ pipeline {
         }
 
         stage('Terraform Dev Deployment'){
+            agent { label 'dev'}
             when {
                 branch 'dev' // Only build the 'main' branch
             }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
+                    stage('Checkout') {
+                                        checkout scm
+    
+                                }
+                        stage('Terraform Init') {
+                            terraforminit()
+                        }
                     for (workspace in workspaceList.DEVELOPMENT){
                         
                         stage("Terraform plan for $workspace"){
