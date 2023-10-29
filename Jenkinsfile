@@ -49,7 +49,7 @@ pipeline {
                     for (workspace in workspaceList.PRODUCTION){
                         stage("Terraform plan for $workspace"){
                             
-                                terraformplan($workspace)
+                                terraformplan("$workspace")
                         }
                     }
                 }
