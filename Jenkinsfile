@@ -24,10 +24,17 @@ def approvalStep(String stageName) {
     stage(stageName) {
         
             script {
-                def userInput = input(id: "${stageName}_approval", message: "Do you approve ${stageName}?", parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]) 
-                if (userInput == 'No') {
-                    error("Approval for ${stageName} was declined. Aborting the pipeline.")
-                }
+                 // Use the "input" step to request approval
+                    def userInput = input(
+                        id: 'approval',
+                        message: 'Do you approve applying these Terraform changes?',
+                        parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]
+                    )
+                    
+                    if (userInput == 'No') {
+                        currentBuild.result = 'FAILURE'
+                        error('Approval denied. Aborting the pipeline.')
+                    }
             }
         
     }
