@@ -31,12 +31,12 @@ def takeApproval(String stageName) {
                             choice(name: 'ACTION', choices: 'Proceed\nAbort\nAbort All', description: 'Choose an action')
                         ]
                     )
-                    return userInput
+                    
 
                     
                 }
             }
-        
+        return userInput
     }
 
 
