@@ -24,8 +24,8 @@ def approvalStep(String stageName) {
     stage(stageName) {
         
             script {
-                def approvalResult = input(id: "${stageName}_approval", message: "Do you approve ${stageName}?", ok: "Approve")
-                if (approvalResult == 'no') {
+                def approvalResult = input(id: "${stageName}_approval", message: "Do you approve ${stageName}?", parameters: [choice(name: 'APPROVAL', choices: 'Yes\nNo', description: 'Choose Yes to approve or No to reject')]) 
+                if (approvalResult == 'No') {
                     error("Approval for ${stageName} was declined. Aborting the pipeline.")
                 }
             }
