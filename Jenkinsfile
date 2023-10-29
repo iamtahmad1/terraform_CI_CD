@@ -31,16 +31,9 @@ def takeApproval(String stageName) {
                             choice(name: 'ACTION', choices: 'Proceed\nAbort\nAbort All', description: 'Choose an action')
                         ]
                     )
+                    return userInput
 
-                    if (userInput == 'Proceed') {
-                        echo 'Proceeding with the next steps.'
-                    } else if (userInput == 'Abort') {
-                        echo('User chose to abort this step.')
-                        continue
-                    } else if (userInput == 'Abort All') {
-                        currentBuild.result = 'ABORTED'
-                        error('User chose to abort all steps.')
-                    }
+                    
                 }
             }
         
@@ -86,7 +79,16 @@ pipeline {
                                 terraformplan(workspace)
                         }
                         
-                        takeApproval(workspace)
+                        approval == takeApproval(workspace)
+                        if (approval == 'Proceed') {
+                        echo 'Proceeding with the next steps.'
+                        } else if (approval == 'Abort') {
+                        echo('User chose to abort this step.')
+                        continue
+                        } else if (approval == 'Abort All') {
+                        currentBuild.result = 'ABORTED'
+                        error('User chose to abort all steps.')
+                        }
 
                         stage("Terraform apply for $workspace"){
                             
