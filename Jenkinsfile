@@ -38,22 +38,18 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Initialization') {
-            steps {
-                // Initialize Terraform and select a workspace
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                terraforminit()
-            }
-            }
-        }
+        
+        // stage('Initialization') {
+        //     steps {
+        //         // Initialize Terraform and select a workspace
+        //         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
+        //         terraforminit()
+        //     }
+        //     }
+        // }
 
         stage('Terraform Prod Deployment'){
+            agent { label 'prod'}
             when {
                 branch 'main' // Only build the 'main' branch
             }
@@ -61,6 +57,14 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
                     for (workspace in workspaceList.PRODUCTION){
+                        stage('Checkout') {
+                                        checkout scm
+    
+                                }
+                        stage('Terraform Init') {
+                            terraforminit()
+                        }
+
                         stage("Terraform plan for $workspace"){
                             
                                 terraformplan(workspace)
@@ -86,7 +90,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
                     for (workspace in workspaceList.DEVELOPMENT){
-                        parallel{
+                        
                         stage("Terraform plan for $workspace"){
                             
                                 terraformplan(workspace)
@@ -97,7 +101,7 @@ pipeline {
                         stage("Terraform apply for $workspace"){
                             
                                 terraformapply()
-                        }
+                        
                     }
                 }
                 }
