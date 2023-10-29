@@ -17,7 +17,7 @@ def terraformplan(workspace) {
 
 def terraformapply() {
     // Your common steps or tasks go here
-    sh 'sh terraform apply -auto-approve tfplan'
+    sh "terraform apply -auto-approve tfplan"
 }
 
 def approvalStep(String stageName) {
@@ -53,7 +53,7 @@ pipeline {
             }
         }
 
-        stage('Terraform Plan'){
+        stage('Terraform Prod Deployment'){
             when {
                 branch 'main' // Only build the 'main' branch
             }
@@ -65,6 +65,7 @@ pipeline {
                             
                                 terraformplan(workspace)
                         }
+                        
                         approvalStep(workspace)
 
                         stage("Terraform apply for $workspace"){
@@ -72,6 +73,33 @@ pipeline {
                                 terraformapply()
                         }
                     }
+                }
+            }
+        }
+        }
+
+        stage('Terraform Dev Deployment'){
+            when {
+                branch 'dev' // Only build the 'main' branch
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
+                script {
+                    for (workspace in workspaceList.DEVELOPMENT){
+                        parallel{
+                        stage("Terraform plan for $workspace"){
+                            
+                                terraformplan(workspace)
+                        }
+                        
+                        approvalStep(workspace)
+
+                        stage("Terraform apply for $workspace"){
+                            
+                                terraformapply()
+                        }
+                    }
+                }
                 }
             }
         }
