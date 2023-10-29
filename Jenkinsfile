@@ -11,8 +11,8 @@ def terraforminit() {
 
 def terraformplan(workspace) {
     // Your common steps or tasks go here
-    sh 'terraform workspace select "$workspace"'
-    sh 'terraform plan -out=tfplan -var-file vars/"($workspace).tfvars"'
+    sh "terraform workspace select '$workspace'"
+    sh "terraform plan -out=tfplan -var-file vars/'($workspace).tfvars'"
 }
 
 def terraformapply() {
@@ -49,7 +49,7 @@ pipeline {
                     for (workspace in workspaceList.PRODUCTION){
                         stage("Terraform plan for $workspace"){
                             
-                                terraformplan("$workspace")
+                                terraformplan('$workspace')
                         }
                     }
                 }
