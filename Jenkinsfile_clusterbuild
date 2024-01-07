@@ -31,7 +31,7 @@ def selectWorkspace() {
     def choiceArray = []
 
     // Read the content of the file using the 'readFile' step
-    def filesInFolder = readFile(file: "workspaces.txt").trim()
+    def filesInFolder = readFile(file: "workspaces.txt")
 
     filesInFolder.each { fileName ->
         choiceArray << fileName
