@@ -59,7 +59,7 @@ def selectWorkspace(){
      // Specify the file path
                     
 
-                    def filePath = 'workspace.txt'
+                    def filePath = './workspace.txt'
 
                     // Call the function to read and process the file
                     def linesArray = readFileAndProcessLines(filePath)
