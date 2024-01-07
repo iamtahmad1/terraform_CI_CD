@@ -27,30 +27,46 @@ def terraformapply() {
     sh "terraform apply -auto-approve tfplan"
 }
 
-def selectWorkspace() {
-    def choiceArray = []
+// def selectWorkspace() {
+//     def choiceArray = []
 
-    // Read the content of the file using the 'readFile' step
-    def filesInFolder = readFile(file: "workspaces.txt")
+//     // Read the content of the file using the 'readFile' step
+//     def filesInFolder = readFile(file: "workspaces.txt")
 
-    filesInFolder.each { fileName ->
-        choiceArray << fileName
-    }
+//     filesInFolder.each { fileName ->
+//         choiceArray << fileName
+//     }
 
-    def userInput = input(
-        id: 'userInput',
-        message: 'Select a workspace',
-        parameters: [
-            choice(name: 'WORKSPACE', description: 'Select a workspace', defaultValue: '', choices: choiceArray)
-        ]
-    )
+//     def userInput = input(
+//         id: 'userInput',
+//         message: 'Select a workspace',
+//         parameters: [
+//             choice(name: 'WORKSPACE', description: 'Select a workspace', defaultValue: '', choices: choiceArray)
+//         ]
+//     )
 
-    def selectedWorkspace = userInput['WORKSPACE']
-    echo "Selected workspace: ${selectedWorkspace}"
+//     def selectedWorkspace = userInput['WORKSPACE']
+//     echo "Selected workspace: ${selectedWorkspace}"
 
-    return selectedWorkspace
+//     return selectedWorkspace
+// }
+
+def selectedWorkspace(){
+     // Specify the file path
+                    def filePath = 'workspace.txt'
+
+                    // Call the function to read and process the file
+                    def linesArray = readFileAndProcessLines(filePath)
+
+                    // Print each line
+                    linesArray.each { line ->
+                        echo "Line: ${line}"
+                    }
+
+                    // Now you can use the 'linesArray' variable in your further pipeline logic
+                    // For example, echoing the first line
+                    echo "First Line: ${linesArray[0]}"
 }
-
 
 def takeApproval(String stageName) {
     stage("Approval for $stageName") {
