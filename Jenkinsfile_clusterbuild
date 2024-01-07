@@ -60,9 +60,9 @@ def selectWorkspace(){
                     
 
                     def filePath = './workspaces.txt'
+                    def fileContent = readFile(filePath)
+                    def linesArray = fileContent.readLines()
 
-                    // Call the function to read and process the file
-                    def linesArray = readFileAndProcessLines(filePath)
 
                     // Print each line
                     linesArray.each { line ->
@@ -80,6 +80,7 @@ def selectWorkspace(){
 
                     // Now you can use the selected 'userChoice' variable in your further pipeline logic
                     echo "User Selected Line: ${userChoice}"
+                    return userChoice
 }
 
 def takeApproval(String stageName) {
