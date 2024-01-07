@@ -53,6 +53,10 @@ def terraformapply() {
 
 def selectWorkspace(){
      // Specify the file path
+                    def readFileAndProcessLines(filePath) {
+    def fileContent = readFile(filePath)
+    return fileContent.readLines()
+}
                     def filePath = 'workspace.txt'
 
                     // Call the function to read and process the file
