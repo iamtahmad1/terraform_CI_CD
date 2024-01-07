@@ -27,30 +27,52 @@ def terraformapply() {
     sh "terraform apply -auto-approve tfplan"
 }
 
-
 def selectWorkspace(folderPath) {
     def choiceArray = []
-    def workspaces = sh(returnStdout: true, script: "ls $folderPath")
-    workspaces.split().each {
-        //condition to skip files if any
+    def workspaces = sh(returnStdout: true, script: "ls $folderPath").trim()
+    
+    workspaces.findAll(/.+/).each {
         choiceArray << it.replaceAll(/\.[^.]+$/, '')
     }
+
     def userInput = input(
         id: 'userInput',
-        message: 'Select a file',
+        message: 'Select a workspace',
         parameters: [
-            choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: choiceArray)
+            choice(name: 'WORKSPACE', description: 'Select a workspace', defaultValue: '', choices: choiceArray)
         ]
     )
 
-    def selectedFile = userInput['FILE']
-    def newWorkspace = selectedFile.name.replaceAll(/\..+$/, '')
+    def selectedWorkspace = userInput['WORKSPACE']
+    echo "Selected workspace: ${selectedWorkspace}"
 
-    echo "Selected file: ${selectedFile}"
-    echo "File name without extension: ${newWorkspace}"
-
-    return newWorkspace
+    return selectedWorkspace
 }
+
+
+// def selectWorkspace(folderPath) {
+//     def choiceArray = []
+//     def workspaces = sh(returnStdout: true, script: "ls $folderPath")
+//     workspaces.split().each {
+//         //condition to skip files if any
+//         choiceArray << it.replaceAll(/\.[^.]+$/, '')
+//     }
+//     def userInput = input(
+//         id: 'userInput',
+//         message: 'Select a file',
+//         parameters: [
+//             choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: choiceArray)
+//         ]
+//     )
+
+//     def selectedFile = userInput['FILE']
+//     def newWorkspace = selectedFile.name
+
+//     echo "Selected file: ${selectedFile}"
+//     echo "File name without extension: ${newWorkspace}"
+
+//     return newWorkspace
+// }
 
 def takeApproval(String stageName) {
     stage("Approval for $stageName") {
