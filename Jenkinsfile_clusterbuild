@@ -29,12 +29,16 @@ def terraformapply() {
 
 
 def selectWorkspace(folderPath) {
-    def filesInFolder = sh(script: "ls ${folderPath}", returnStdout: true).trim().split('\n')
+    def workspaces = sh(returnStdout: true, script: "ls $folderPath")
+    workspaces.split().each {
+        //condition to skip files if any
+        workspaceslist << it
+    }
     def userInput = input(
         id: 'userInput',
         message: 'Select a file',
         parameters: [
-            choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: filesInFolder)
+            choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: workspaceslist)
         ]
     )
 
