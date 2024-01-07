@@ -27,46 +27,14 @@ def terraformapply() {
     sh "terraform apply -auto-approve tfplan"
 }
 
-// def selectWorkspace(folderPath) {
-//     def choiceArray = []
-    
-//     // Use readFile to avoid script security issues
-//     def workspaces = readFile("${folderPath}/workspaces.txt").trim()
-    
-//     workspaces.tokenize().each {
-//         choiceArray << it.replaceAll(/\.[^.]+$/, '')
-//     }
-
-//     def userInput = input(
-//         id: 'userInput',
-//         message: 'Select a workspace',
-//         parameters: [
-//             choice(name: 'WORKSPACE', description: 'Select a workspace', defaultValue: '', choices: choiceArray)
-//         ]
-//     )
-
-//     def selectedWorkspace = userInput['WORKSPACE']
-//     echo "Selected workspace: ${selectedWorkspace}"
-
-//     return selectedWorkspace
-// }
-
-
 def selectWorkspace(folderPath) {
     def choiceArray = []
-
-    // Use Jenkins 'pwd' step to get the current working directory
-    def currentDir = pwd()
-
-    // Construct the full path to the specified folder
-    def folder = "${currentDir}/${folderPath}"
-
-    // Get the list of files using Jenkins 'bat' or 'sh' step
-    def filesInFolder = bat(script: "dir /B \"${folder}\"", returnStatus: true) ?: sh(script: "ls \"${folder}\"", returnStdout: true).trim().split('\n')
-
-    filesInFolder.each { fileName ->
-        // Extract filename without extension
-        choiceArray << fileName.replaceAll(/\.[^.]+$/, '')
+    
+    // Use readFile to avoid script security issues
+    def workspaces = readFile("${folderPath}/workspaces.txt").trim()
+    
+    workspaces.tokenize().each {
+        choiceArray << it.replaceAll(/\.[^.]+$/, '')
     }
 
     def userInput = input(
@@ -82,8 +50,6 @@ def selectWorkspace(folderPath) {
 
     return selectedWorkspace
 }
-
-
 
 def takeApproval(String stageName) {
     stage("Approval for $stageName") {
@@ -133,7 +99,7 @@ pipeline {
                         
                     stage("Select the Workspace"){
                             
-                         def  selected_workspace = selectWorkspace("./vars/")
+                         def  selected_workspace = selectWorkspace(".")
                         }
                         
 
