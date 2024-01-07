@@ -80,6 +80,7 @@ def selectWorkspace(){
 
                     // Now you can use the selected 'userChoice' variable in your further pipeline logic
                     echo "User Selected Line: ${userChoice}"
+                    env.selected_workspace = userChoice
                     return userChoice
 }
 
@@ -131,19 +132,19 @@ pipeline {
                         
                     stage("Select the Workspace"){
                             
-                         def  selected_workspace = selectWorkspace()
+                        selectWorkspace()
                         }
                         
 
-                    stage("Terraform plan for $selected_workspace"){
+                    stage("Terraform plan for $env.selected_workspace"){
                             
-                                terraformplan(selected_workspace)
+                                terraformplan(env.selected_workspace)
                         
                     }
 
                     takeApproval(selected_workspace)
 
-                    stage("Terraform apply for $selected_workspace"){
+                    stage("Terraform apply for $env.selected_workspace"){
                             
                                 terraformapply()
                         
