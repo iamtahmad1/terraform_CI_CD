@@ -29,9 +29,11 @@ def terraformapply() {
 
 def selectWorkspace(folderPath) {
     def choiceArray = []
-    def workspaces = sh(returnStdout: true, script: "ls $folderPath").trim()
     
-    workspaces.findAll(/.+/).each {
+    // Use readFile to avoid script security issues
+    def workspaces = readFile("${folderPath}/workspaces.txt").trim()
+    
+    workspaces.tokenize().each {
         choiceArray << it.replaceAll(/\.[^.]+$/, '')
     }
 
@@ -48,6 +50,7 @@ def selectWorkspace(folderPath) {
 
     return selectedWorkspace
 }
+
 
 
 // def selectWorkspace(folderPath) {
