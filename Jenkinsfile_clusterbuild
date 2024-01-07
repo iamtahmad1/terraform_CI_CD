@@ -28,7 +28,8 @@ def terraformapply() {
 }
 
 
-def selectWorkspace() {
+def selectWorkspace(folderPath) {
+    def filesInFolder = sh(script: "ls ${folderPath}", returnStdout: true).trim().split('\n')
     def userInput = input(
         id: 'userInput',
         message: 'Select a file',
@@ -94,7 +95,7 @@ pipeline {
                         
                     stage("Select the Workspace"){
                             
-                         def  selected_workspace = selectWorkspace()
+                         def  selected_workspace = selectWorkspace("dev/")
                         }
                         
 
