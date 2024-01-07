@@ -34,7 +34,7 @@ def selectWorkspace(folderPath) {
         id: 'userInput',
         message: 'Select a file',
         parameters: [
-            choice(name: 'FILE', description: 'Select a file', defaultValue: '', optional: false)
+            choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: filesInFolder)
         ]
     )
 
