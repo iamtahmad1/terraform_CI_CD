@@ -77,9 +77,9 @@ pipeline {
 
         stage('Terraform Dev Deployment'){
             agent { label 'dev'}
-            when {
-                branch 'dev' // Only build the 'main' branch
-            }
+            // when {
+            //     branch 'dev' // Only build the 'main' branch
+            // }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
                 script {
