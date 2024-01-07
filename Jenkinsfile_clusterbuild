@@ -27,14 +27,41 @@ def terraformapply() {
     sh "terraform apply -auto-approve tfplan"
 }
 
+// def selectWorkspace(folderPath) {
+//     def choiceArray = []
+    
+//     // Use readFile to avoid script security issues
+//     def workspaces = readFile("${folderPath}/workspaces.txt").trim()
+    
+//     workspaces.tokenize().each {
+//         choiceArray << it.replaceAll(/\.[^.]+$/, '')
+//     }
+
+//     def userInput = input(
+//         id: 'userInput',
+//         message: 'Select a workspace',
+//         parameters: [
+//             choice(name: 'WORKSPACE', description: 'Select a workspace', defaultValue: '', choices: choiceArray)
+//         ]
+//     )
+
+//     def selectedWorkspace = userInput['WORKSPACE']
+//     echo "Selected workspace: ${selectedWorkspace}"
+
+//     return selectedWorkspace
+// }
+
+
 def selectWorkspace(folderPath) {
     def choiceArray = []
-    
-    // Use readFile to avoid script security issues
-    def workspaces = readFile("${folderPath}/workspaces.txt").trim()
-    
-    workspaces.tokenize().each {
-        choiceArray << it.replaceAll(/\.[^.]+$/, '')
+
+    // Use Groovy's File class to get the list of files
+    def dir = new File(folderPath)
+    def filesInFolder = dir.listFiles()
+
+    filesInFolder.each { file ->
+        // Extract filename without extension
+        choiceArray << file.name.replaceAll(/\.[^.]+$/, '')
     }
 
     def userInput = input(
@@ -51,31 +78,6 @@ def selectWorkspace(folderPath) {
     return selectedWorkspace
 }
 
-
-
-// def selectWorkspace(folderPath) {
-//     def choiceArray = []
-//     def workspaces = sh(returnStdout: true, script: "ls $folderPath")
-//     workspaces.split().each {
-//         //condition to skip files if any
-//         choiceArray << it.replaceAll(/\.[^.]+$/, '')
-//     }
-//     def userInput = input(
-//         id: 'userInput',
-//         message: 'Select a file',
-//         parameters: [
-//             choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: choiceArray)
-//         ]
-//     )
-
-//     def selectedFile = userInput['FILE']
-//     def newWorkspace = selectedFile.name
-
-//     echo "Selected file: ${selectedFile}"
-//     echo "File name without extension: ${newWorkspace}"
-
-//     return newWorkspace
-// }
 
 def takeApproval(String stageName) {
     stage("Approval for $stageName") {
