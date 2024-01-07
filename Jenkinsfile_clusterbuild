@@ -31,9 +31,9 @@ def terraformapply() {
 def selectWorkspace(folderPath) {
     def choiceArray = []
     def workspaces = sh(returnStdout: true, script: "ls $folderPath")
-    workspaces.trim().split().each {
+    workspaces.split().each {
         //condition to skip files if any
-        choiceArray << it
+        choiceArray << it.replaceAll(/\.[^.]+$/, '')
     }
     def userInput = input(
         id: 'userInput',
