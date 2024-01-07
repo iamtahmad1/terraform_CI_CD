@@ -32,13 +32,13 @@ def selectWorkspace(folderPath) {
     def workspaces = sh(returnStdout: true, script: "ls $folderPath")
     workspaces.split().each {
         //condition to skip files if any
-        workspaceslist << it
+        choiceArray << it
     }
     def userInput = input(
         id: 'userInput',
         message: 'Select a file',
         parameters: [
-            choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: workspaceslist)
+            choice(name: 'FILE', description: 'Select a file', defaultValue: '', choices: choiceArray)
         ]
     )
 
