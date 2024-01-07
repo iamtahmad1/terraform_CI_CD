@@ -4,5 +4,6 @@ instance_type = "t2.micro"              # Replace with your desired instance typ
 tags = {
   Name        = "Dev Instance"
   Environment = "Dev"
+  test        = "test"
   // Add any other tags as needed
 }

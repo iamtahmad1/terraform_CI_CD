@@ -1,13 +1,20 @@
-def workspaceList = [
-    'DEVELOPMENT': ['dev', 'qa'],
-    'PRODUCTION': ['prod', 'production'],
-]
-
 def terraforminit() {
     // Your common steps or tasks go here
     sh "terraform init"
 }
 
+
+def createTerraformWorkspace(workspaceName) {
+    // Check if the Terraform workspace exists
+    def workspaceExists = sh(script: "terraform workspace list | grep -q ${workspaceName}", returnStatus: true) == 0
+
+    // Create the Terraform workspace if it does not exist
+    if (!workspaceExists) {
+        sh "terraform workspace new ${workspaceName}"
+    } else {
+        echo "Terraform workspace ${workspaceName} already exists."
+    }
+}
 
 def terraformplan(workspace) {
     // Your common steps or tasks go here
@@ -18,6 +25,25 @@ def terraformplan(workspace) {
 def terraformapply() {
     // Your common steps or tasks go here
     sh "terraform apply -auto-approve tfplan"
+}
+
+
+def selectWorkspace() {
+    def userInput = input(
+        id: 'userInput',
+        message: 'Select a file',
+        parameters: [
+            file(name: 'FILE', description: 'Select a file', defaultValue: '', optional: false)
+        ]
+    )
+
+    def selectedFile = userInput['FILE']
+    def newWorkspace = selectedFile.name.replaceAll(/\..+$/, '')
+
+    echo "Selected file: ${selectedFile}"
+    echo "File name without extension: ${newWorkspace}"
+
+    return newWorkspace
 }
 
 def takeApproval(String stageName) {
@@ -44,48 +70,10 @@ def takeApproval(String stageName) {
     }
 
 
-
 pipeline {
     agent any
 
     stages {
-        
-
-        stage('Terraform Prod Deployment'){
-            agent { label 'prod'}
-            when {
-                branch 'main' // Only build the 'main' branch
-            }
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                script {
-                    stage('Checkout') {
-                                        checkout scm
-    
-                                }
-                        stage('Terraform Init') {
-                            terraforminit()
-                        }
-
-                    for (workspace in workspaceList.PRODUCTION){
-                        
-
-                        stage("Terraform plan for $workspace"){
-                            
-                                terraformplan(workspace)
-                        }
-                        
-                        takeApproval(workspace)
-
-                        stage("Terraform apply for $workspace"){
-                            
-                                terraformapply()
-                        }
-                    }
-                }
-            }
-        }
-        }
 
         stage('Terraform Dev Deployment'){
             agent { label 'dev'}
@@ -99,24 +87,32 @@ pipeline {
                                         checkout scm
     
                                 }
-                        stage('Terraform Init') {
+                    stage('Terraform Init') {
                             terraforminit()
                         }
-                    for (workspace in workspaceList.DEVELOPMENT){
+
                         
-                        stage("Terraform plan for $workspace"){
+                    stage("Select the Workspace"){
                             
-                                terraformplan(workspace)
+                         def  selected_workspace = selectWorkspace()
                         }
                         
-                        takeApproval(workspace)
 
-                        stage("Terraform apply for $workspace"){
+                    stage("Terraform plan for $selected_workspace"){
+                            
+                                terraformplan(selected_workspace)
+                        
+                    }
+
+                    takeApproval(selected_workspace)
+
+                    stage("Terraform apply for $selected_workspace"){
                             
                                 terraformapply()
                         
                     }
                 }
+                
                 }
             }
         }
