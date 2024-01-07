@@ -27,11 +27,11 @@ def terraformapply() {
     sh "terraform apply -auto-approve tfplan"
 }
 
-def selectWorkspace(folderPath) {
+def selectWorkspace() {
     def choiceArray = []
 
     // Read the content of the file using the 'readFile' step
-    def filesInFolder = readFile(file: "${folderPath}/workspaces.txt").trim().split('\n')
+    def filesInFolder = readFile(file: "workspaces.txt").trim()
 
     filesInFolder.each { fileName ->
         def fileNameWithoutExtension = fileName.replaceAll(/\.[^.]+$/, '')
@@ -101,7 +101,7 @@ pipeline {
                         
                     stage("Select the Workspace"){
                             
-                         def  selected_workspace = selectWorkspace(".")
+                         def  selected_workspace = selectWorkspace()
                         }
                         
 
