@@ -51,7 +51,7 @@ def terraformapply() {
 //     return selectedWorkspace
 // }
 
-def selectedWorkspace(){
+def selectWorkspace(){
      // Specify the file path
                     def filePath = 'workspace.txt'
 
