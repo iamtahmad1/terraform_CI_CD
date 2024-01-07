@@ -29,12 +29,13 @@ def terraformapply() {
 
 def selectWorkspace(folderPath) {
     def choiceArray = []
-    
-    // Use readFile to avoid script security issues
-    def workspaces = readFile("${folderPath}/workspaces.txt").trim()
-    
-    workspaces.tokenize().each {
-        choiceArray << it.replaceAll(/\.[^.]+$/, '')
+
+    // Read the content of the file using the 'readFile' step
+    def filesInFolder = readFile(file: "${folderPath}/workspaces.txt").trim().split('\n')
+
+    filesInFolder.each { fileName ->
+        // Extract filename without extension
+        choiceArray << fileName.replaceAll(/\.[^.]+$/, '')
     }
 
     def userInput = input(
@@ -50,6 +51,7 @@ def selectWorkspace(folderPath) {
 
     return selectedWorkspace
 }
+
 
 def takeApproval(String stageName) {
     stage("Approval for $stageName") {
