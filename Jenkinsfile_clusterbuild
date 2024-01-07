@@ -1,162 +1,108 @@
-def terraforminit() {
-    // Your common steps or tasks go here
+def terraformInit() {
+    // Common steps or tasks go here
     sh "terraform init"
 }
 
-
 def createTerraformWorkspace(workspaceName) {
-    // Check if the Terraform workspace exists
     def workspaceExists = sh(script: "terraform workspace list | grep -q ${workspaceName}", returnStatus: true) == 0
 
-    // Create the Terraform workspace if it does not exist
     if (!workspaceExists) {
         sh "terraform workspace new ${workspaceName}"
     } else {
         echo "Terraform workspace ${workspaceName} already exists."
+        error("Aborting the pipeline.")
     }
 }
 
-def terraformplan(workspace) {
-    // Your common steps or tasks go here
+def terraformPlan(workspace) {
+    // Common steps or tasks go here
     sh "terraform workspace select '$workspace'"
     sh "terraform plan -out=tfplan -var-file vars/'$workspace'.tfvars"
 }
 
-def terraformapply() {
-    // Your common steps or tasks go here
+def terraformApply() {
+    // Common steps or tasks go here
     sh "terraform apply -auto-approve tfplan"
 }
 
-// def selectWorkspace() {
-//     def choiceArray = []
-
-//     // Read the content of the file using the 'readFile' step
-//     def filesInFolder = readFile(file: "workspaces.txt")
-
-//     filesInFolder.each { fileName ->
-//         choiceArray << fileName
-//     }
-
-//     def userInput = input(
-//         id: 'userInput',
-//         message: 'Select a workspace',
-//         parameters: [
-//             choice(name: 'WORKSPACE', description: 'Select a workspace', defaultValue: '', choices: choiceArray)
-//         ]
-//     )
-
-//     def selectedWorkspace = userInput['WORKSPACE']
-//     echo "Selected workspace: ${selectedWorkspace}"
-
-//     return selectedWorkspace
-// }
-
 def readFileAndProcessLines(filePath) {
     def fileContent = readFile(filePath)
-    return fileContent.readLines()}
-
-def selectWorkspace(){
-     // Specify the file path
-                    
-
-                    def filePath = './workspaces.txt'
-                    def fileContent = readFile(filePath)
-                    def linesArray = fileContent.readLines()
-
-
-                    // Print each line
-                    linesArray.each { line ->
-                        echo "Line: ${line}"
-                    }
-
-                    // Use 'input' step to get user choice
-                    def userChoice = input(
-                        id: 'userInput',
-                        message: 'Select a line:',
-                        parameters: [
-                            choice(name: 'Select Line', choices: linesArray)
-                        ]
-                    )
-
-                    // Now you can use the selected 'userChoice' variable in your further pipeline logic
-                    echo "User Selected Line: ${userChoice}"
-                    env.selected_workspace = userChoice
-                    return userChoice
+    return fileContent.readLines()
 }
 
-def takeApproval(String stageName) {
+def selectWorkspace() {
+    def filePath = './workspaces.txt'
+    def linesArray = readFileAndProcessLines(filePath)
+
+    // linesArray.each { line ->
+    //     echo "Line: ${line}"
+    // }
+
+    def userChoice = input(
+        id: 'userInput',
+        message: 'Select a line:',
+        parameters: [
+            choice(name: 'Select Line', choices: linesArray)
+        ]
+    )
+
+    echo "User Selected Line: ${userChoice}"
+    env.selected_workspace = userChoice
+    return userChoice
+}
+
+def takeApproval(stageName) {
     stage("Approval for $stageName") {
-        
-            script {
-                  def userInput = input(
-                        id: 'userInput',
-                        message: 'Select an action:',
-                        parameters: [
-                            choice(name: 'ACTION', choices: 'Proceed\nAbort', description: 'Choose an action')
-                        ]
-                    )
+        script {
+            def userInput = input(
+                id: 'userInput',
+                message: 'Select an action:',
+                parameters: [
+                    choice(name: 'ACTION', choices: 'Proceed\nAbort', description: 'Choose an action')
+                ]
+            )
 
-                    if (userInput == 'Proceed') {
-                        echo 'Proceeding with the next steps.'
-                    } else if (userInput == 'Abort') {
-                        currentBuild.result = 'ABORTED'
-                        error('User chose to abort all steps.')
-                    }
-                }
+            if (userInput == 'Proceed') {
+                echo 'Proceeding with the next steps.'
+            } else if (userInput == 'Abort') {
+                currentBuild.result = 'ABORTED'
+                error('User chose to abort all steps.')
             }
-        
+        }
     }
-
+}
 
 pipeline {
     agent any
 
     stages {
-
-        stage('Terraform Dev Deployment'){
-            agent { label 'dev'}
-            // when {
-            //     branch 'dev' // Only build the 'main' branch
-            // }
+        stage('Terraform Dev Deployment') {
+            agent { label 'dev' }
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]){
-                script {
-                    stage('Checkout') {
-                                        checkout scm
-    
-                                }
-                    stage('Terraform Init') {
-                            terraforminit()
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'terraform_CICD']]) {
+                    script {
+                        stage('Checkout') {
+                            checkout scm
                         }
-
-                        
-                    stage("Select the Workspace"){
-                            
-                        selectWorkspace()
+                        stage('Terraform Init') {
+                            terraformInit()
                         }
-
-                    stage("Create the Workspace"){
-                            
-                        createTerraformWorkspace(env.selected_workspace)
-                        }  
-
-                    stage("Terraform plan for $env.selected_workspace"){
-                            
-                                terraformplan(env.selected_workspace)
-                        
+                        stage("Select the Workspace") {
+                            selectWorkspace()
+                        }
+                        stage("Create the Workspace") {
+                            createTerraformWorkspace(env.selected_workspace)
+                        }
+                        stage("Terraform plan for $env.selected_workspace") {
+                            terraformPlan(env.selected_workspace)
+                        }
+                        takeApproval("Terraform plan")
+                        stage("Terraform apply for $env.selected_workspace") {
+                            terraformApply()
+                        }
                     }
-
-                    takeApproval(selected_workspace)
-
-                    stage("Terraform apply for $env.selected_workspace"){
-                            
-                                terraformapply()
-                        
-                    }
-                }
-                
                 }
             }
         }
-        }
     }
+}
