@@ -95,7 +95,7 @@ pipeline {
                         
                     stage("Select the Workspace"){
                             
-                         def  selected_workspace = selectWorkspace("dev/")
+                         def  selected_workspace = selectWorkspace("vars")
                         }
                         
 
