@@ -34,8 +34,7 @@ def selectWorkspace() {
     def filesInFolder = readFile(file: "workspaces.txt").trim()
 
     filesInFolder.each { fileName ->
-        def fileNameWithoutExtension = fileName.replaceAll(/\.[^.]+$/, '')
-        choiceArray << fileNameWithoutExtension
+        choiceArray << fileName
     }
 
     def userInput = input(
