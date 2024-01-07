@@ -134,7 +134,11 @@ pipeline {
                             
                         selectWorkspace()
                         }
-                        
+
+                    stage("Create the Workspace"){
+                            
+                        createTerraformWorkspace(env.selected_workspace)
+                        }  
 
                     stage("Terraform plan for $env.selected_workspace"){
                             
